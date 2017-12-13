@@ -3,7 +3,7 @@ import imaplib
 import getpass
 import email
 import email.header
-import datetime
+from datetime import datetime
 import os
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import *
@@ -56,10 +56,11 @@ class MyDialog(QtGui.QDialog):
 
 		try:
 			rv, data = M.login(EMAIL_ACCOUNT, self.ui.lineEdit_2.text())
-		except imaplib.IMAP4.error:
-			print "LOGIN FAILED!!! "
+		except imaplib.IMAP4.error as err:
+			print "LOGIN FAILED!!! ", err
 			sys.exit(1)
 
+		
 		print data
 		search_email = self.ui.lineEdit_3.text()
 
@@ -75,9 +76,9 @@ class MyDialog(QtGui.QDialog):
 			print "Mailboxes located."
 
 		rv, data = M.select(EMAIL_FOLDER)
-
 		if rv == 'OK':
 			print "Now processing mailbox ...\n"
+			print 'search mail : ', search_email, 'Current dir : ',curr_dir
 			self.process_mailbox(M, search_email, curr_dir)
 			M.close()
 		else:
@@ -85,9 +86,35 @@ class MyDialog(QtGui.QDialog):
 
 		M.logout()
 
+	def validate(self, date_text):
+		day,month,year = date_text.split('/')
+		isValidDate = True	
+		try :
+			datetime(int(year),int(month),int(day))
+		except ValueError :
+			isValidDate = False
+		if(isValidDate) :
+			return True
+		else :
+			return False
+
 	def process_mailbox(self, M, search_email, curr_dir):
 
-		rv, data = M.search(None, '(OR (TO %s) (FROM %s))' % (search_email, search_email))
+		fromdate = self.ui.lineEdit_4.text()
+		todate = self.ui.lineEdit_5.text()
+		#print 'date from and to ',fromdate, todate
+		
+		if self.validate(fromdate) and self.validate(todate):
+			fromdate = datetime.strptime(str(fromdate), '%d/%m/%Y')
+			fromdate = fromdate.strftime('%d-%b-%Y')
+			todate = datetime.strptime(str(todate), '%d/%m/%Y')
+			todate = todate.strftime('%d-%b-%Y')
+			
+			rv, data = M.search(None, '(OR (TO %s) (FROM %s) (SINCE %s BEFORE %s))' % (search_email, search_email, fromdate, todate))
+			#rv, data = M.search(None, '(OR (TO %s) (FROM %s) (SINCE "12-JAN-2017" BEFORE "12-DEC-2017"))' % (search_email, search_email))
+		else :
+			rv, data = M.search(None, '(OR (TO %s) (FROM %s))' % (search_email, search_email))
+		#rv, data = M.search(None, '(SINCE "01-DEC-2017" BEFORE "10-DEC-2017")')
 		if rv != 'OK':
 			print "No messages found!"
 			return
@@ -156,10 +183,15 @@ class MyDialog(QtGui.QDialog):
 
 			print '%d attachment(s) fetched' %fcount
 			print '-----\n\n'
-
+		for sublist in mailinfo:
+				for item in sublist:
+					print item
+		print 'check' 			
 		mailinfo = [item for sublist in mailinfo for item in sublist]
 		print mailinfo
- 
+ 		
+ 		
+
 if __name__ == "__main__":
 		app = QtGui.QApplication(sys.argv)
 		myapp = MyDialog()
