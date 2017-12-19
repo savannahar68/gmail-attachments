@@ -102,19 +102,15 @@ class MyDialog(QtGui.QDialog):
 
 		fromdate = self.ui.lineEdit_4.text()
 		todate = self.ui.lineEdit_5.text()
-		#print 'date from and to ',fromdate, todate
 		
 		if self.validate(fromdate) and self.validate(todate):
 			fromdate = datetime.strptime(str(fromdate), '%d/%m/%Y')
 			fromdate = fromdate.strftime('%d-%b-%Y')
 			todate = datetime.strptime(str(todate), '%d/%m/%Y')
 			todate = todate.strftime('%d-%b-%Y')
-			
 			rv, data = M.search(None, '(OR (TO %s) (FROM %s) (SINCE %s BEFORE %s))' % (search_email, search_email, fromdate, todate))
-			#rv, data = M.search(None, '(OR (TO %s) (FROM %s) (SINCE "12-JAN-2017" BEFORE "12-DEC-2017"))' % (search_email, search_email))
 		else :
 			rv, data = M.search(None, '(OR (TO %s) (FROM %s))' % (search_email, search_email))
-		#rv, data = M.search(None, '(SINCE "01-DEC-2017" BEFORE "10-DEC-2017")')
 		if rv != 'OK':
 			print "No messages found!"
 			return
