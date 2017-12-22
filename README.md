@@ -33,4 +33,3 @@ This program is a Python script that downloads attachments found in the inbox of
   - [imaplib](https://docs.python.org/3/library/imaplib.html)
   - [email](https://docs.python.org/3/library/email.html)
 
-
