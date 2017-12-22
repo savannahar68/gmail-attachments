@@ -179,10 +179,7 @@ class MyDialog(QtGui.QDialog):
 
 			print '%d attachment(s) fetched' %fcount
 			print '-----\n\n'
-		for sublist in mailinfo:
-				for item in sublist:
-					print item
-		print 'check' 			
+					
 		mailinfo = [item for sublist in mailinfo for item in sublist]
 		print mailinfo
  		
